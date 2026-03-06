@@ -46,23 +46,20 @@ jobs:
         env:
           KOYEB_TOKEN: ${{ secrets.KOYEB_TOKEN }}
         run: |
-          # Define o token de autenticação
           export KOYEB_TOKEN=${{ secrets.KOYEB_TOKEN }}
           
-          # Garante que a aplicação existe (Koyeb exige App para conter o Service)
           if ! koyeb app get ${{ env.APP_NAME }} > /dev/null 2>&1; then
             koyeb app create ${{ env.APP_NAME }}
           fi
 
-          # Lógica de Deploy/Redeploy
           if koyeb service get ${{ env.APP_NAME }}/${{ env.SERVICE_NAME }} > /dev/null 2>&1; then
             echo "Atualizando serviço existente..."
             koyeb service redeploy ${{ env.APP_NAME }}/${{ env.SERVICE_NAME }}
           else
             echo "Criando novo serviço..."
             koyeb service create ${{ env.APP_NAME }}/${{ env.SERVICE_NAME }} \
-              --image ${{ env.DOCKER_IMAGE_NAME }} \
+              --docker ${{ env.DOCKER_IMAGE_NAME }} \
               --instance-type nano \
-              --ports 5000:http \
-              --routes /:5000
+              --port 5000:http \
+              --route /:5000
           fi
