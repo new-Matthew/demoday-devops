@@ -28,7 +28,7 @@ jobs:
           push: true
           tags: ${{ env.DOCKER_IMAGE_NAME }}
 
-deploy:
+  deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
@@ -39,7 +39,6 @@ deploy:
 
       - name: Verificar e Implantar Serviço
         run: |
-          # Verifica se o serviço app-demoday existe (redireciona erro para nulo)
           if koyeb services get app-demoday > /dev/null 2>&1; then
             echo "Serviço encontrado. Atualizando..."
             koyeb services redeploy app-demoday
