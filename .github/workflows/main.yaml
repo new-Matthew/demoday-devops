@@ -1,0 +1,30 @@
+name: DevOps Demo Day Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+
+env:
+  DOCKER_USER: kranio # user no dockerhub
+  DOCKER_IMAGE_NAME: kranio/app-demoday:latest
+  DOCKER_IMAGE_TAG: 1.0.${{ github.run_id }}
+  SERVICE_NAME: app-demoday #
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do Código
+        uses: actions/checkout@v4
+
+      - name: Login no Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_PASS }}
+
+      - name: Build e Push da Imagem
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKER_USER }}/app-demoday:latest
