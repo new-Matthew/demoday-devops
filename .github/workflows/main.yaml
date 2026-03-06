@@ -28,26 +28,26 @@ jobs:
           push: true
           tags: ${{ env.DOCKER_IMAGE_NAME }}
 
-  deploy:
-      needs: build-and-push
-      runs-on: ubuntu-latest
-      steps:
-        - name: Instalar Koyeb CLI
-          uses: koyeb/action@v2
-          with:
-            api_key: ${{ secrets.KOYEB_TOKEN }}
+deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Instalar Koyeb CLI
+        uses: koyeb/action@v2
+        with:
+          api_key: ${{ secrets.KOYEB_TOKEN }}
 
-        - name: Verificar e Implantar Serviço
-          run: |
-            # Verifica se o serviço app-demoday existe (redireciona erro para nulo)
-            if koyeb services get app-demoday > /dev/null 2>&1; then
-              echo "Serviço encontrado. Atualizando..."
-              koyeb services redeploy app-demoday
-            else
-              echo "Serviço não encontrado. Criando..."
-              koyeb services create app-demoday \
-                --image ${{ env.DOCKER_IMAGE_NAME }} \
-                --instance-type nano \
-                --ports 5000:http \
-                --routes /:5000
-            fi
+      - name: Verificar e Implantar Serviço
+        run: |
+          # Verifica se o serviço app-demoday existe (redireciona erro para nulo)
+          if koyeb services get app-demoday > /dev/null 2>&1; then
+            echo "Serviço encontrado. Atualizando..."
+            koyeb services redeploy app-demoday
+          else
+            echo "Serviço não encontrado. Criando..."
+            koyeb services create app-demoday \
+              --image ${{ env.DOCKER_IMAGE_NAME }} \
+              --instance-type nano \
+              --ports 5000:http \
+              --routes /:5000
+          fi
