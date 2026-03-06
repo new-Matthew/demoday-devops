@@ -7,6 +7,8 @@ on:
 env:
   DOCKER_USER: kranio
   DOCKER_IMAGE_NAME: kranio/app-demoday:latest
+  APP_NAME: app-demoday
+  SERVICE_NAME: service-demoday
 
 jobs:
   build-and-push:
@@ -32,19 +34,33 @@ jobs:
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
-      - name: Instalar Koyeb CLI
-        uses: koyeb/action@v2
-        with:
-          api_key: ${{ secrets.KOYEB_TOKEN }}
+      - name: Checkout do Código
+        uses: actions/checkout@v4
 
-      - name: Verificar e Implantar Serviço
+      - name: Instalar Koyeb CLI Manualmente
         run: |
-          if koyeb services get app-demoday > /dev/null 2>&1; then
-            echo "Serviço encontrado. Atualizando..."
-            koyeb services redeploy app-demoday
+          curl https://raw.githubusercontent.com/koyeb/koyeb-cli/master/install.sh | sh
+          echo "$HOME/.koyeb/bin" >> $GITHUB_PATH
+
+      - name: Verificar e Implantar no Koyeb
+        env:
+          KOYEB_TOKEN: ${{ secrets.KOYEB_TOKEN }}
+        run: |
+          # Define o token de autenticação
+          export KOYEB_TOKEN=${{ secrets.KOYEB_TOKEN }}
+          
+          # Garante que a aplicação existe (Koyeb exige App para conter o Service)
+          if ! koyeb app get ${{ env.APP_NAME }} > /dev/null 2>&1; then
+            koyeb app create ${{ env.APP_NAME }}
+          fi
+
+          # Lógica de Deploy/Redeploy
+          if koyeb service get ${{ env.APP_NAME }}/${{ env.SERVICE_NAME }} > /dev/null 2>&1; then
+            echo "Atualizando serviço existente..."
+            koyeb service redeploy ${{ env.APP_NAME }}/${{ env.SERVICE_NAME }}
           else
-            echo "Serviço não encontrado. Criando..."
-            koyeb services create app-demoday \
+            echo "Criando novo serviço..."
+            koyeb service create ${{ env.APP_NAME }}/${{ env.SERVICE_NAME }} \
               --image ${{ env.DOCKER_IMAGE_NAME }} \
               --instance-type nano \
               --ports 5000:http \
