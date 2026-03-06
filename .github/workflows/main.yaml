@@ -5,10 +5,9 @@ on:
     branches: [ "main" ]
 
 env:
-  DOCKER_USER: kranio # user no dockerhub
+  DOCKER_USER: kranio
   DOCKER_IMAGE_NAME: kranio/app-demoday:latest
-  DOCKER_IMAGE_TAG: 1.0.${{ github.run_id }}
-  SERVICE_NAME: app-demoday #
+
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -19,7 +18,7 @@ jobs:
       - name: Login no Docker Hub
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKER_USER }}
+          username: ${{ env.DOCKER_USER }}
           password: ${{ secrets.DOCKER_PASS }}
 
       - name: Build e Push da Imagem
@@ -27,4 +26,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKER_USER }}/app-demoday:latest
+          tags: ${{ env.DOCKER_USER }}/app-demoday:latest
